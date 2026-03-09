@@ -1,0 +1,5 @@
+{
+  "name": "Moodberry",
+  "description": "A visual-first mood expression tool that generates personalized aesthetic kits including wallpapers, playlists, and habits based on your image selections.",
+  "requestFramePermissions": []
+}

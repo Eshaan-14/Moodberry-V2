@@ -1,0 +1,16 @@
+[build]
+  # This tells Netlify how to build your React app
+  command = "npm run build"
+  
+  # This is the folder Vite creates when the build is done
+  publish = "dist"
+  
+  # This tells Netlify where your backend ai.ts file lives
+  functions = "netlify/functions"
+
+# This single redirect is REQUIRED for React apps. 
+# It ensures that if you refresh the page, it doesn't throw a 404 error.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
