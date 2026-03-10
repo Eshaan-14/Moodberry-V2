@@ -36,7 +36,7 @@ export class GeminiService {
       const cleanPrompt = encodeURIComponent(`high-end mobile wallpaper, 9:16 aspect ratio, ${prompt}, cinematic lighting, 4k, minimalist aesthetic`);
       
       // We are back to the high-quality FLUX model!
-      const pollinationsUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1080&height=1920&nologo=true&seed=${seed}&model=flux`;
+      const pollinationsUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1080&height=1920&nologo=true&seed=${seed}&model=turbo`;
 
       // 1. Browser fetches directly from Pollinations (bypassing Vercel bot-blocks)
       const response = await fetch(pollinationsUrl);
