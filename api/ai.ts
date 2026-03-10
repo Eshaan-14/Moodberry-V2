@@ -197,21 +197,45 @@ export default async function handler(req: any, res: any) {
     }
 
     // ROUTE 2: Generate Wallpaper (Pollinations Turbo Model)
+    // ROUTE 2: Generate Wallpaper (Powered by Hugging Face FLUX.1)
     if (action === 'generateWallpaper') {
       try {
-        // Because of step 8 above, "payload" is now guaranteed to be short and comma-separated!
-        const cleanPrompt = `high-end mobile wallpaper, 9:16 aspect ratio, ${payload}, cinematic lighting, minimalist aesthetic`;
-        
-        // Encode the prompt so the URL doesn't break
-        const encodedPrompt = encodeURIComponent(cleanPrompt);
-        
-        // Pass the perfectly sized prompt directly to the stable flux model
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=720&height=1280&nologo=true`;
+        const hfApiKey = process.env.HF_API_KEY;
+        if (!hfApiKey) {
+          throw new Error("Missing Hugging Face API Key!");
+        }
+
+        // We use the short, optimized payload from Gemini
+        const cleanPrompt = `high-end mobile wallpaper, vertical 9:16 aspect ratio, ${payload}, cinematic lighting, highly detailed, aesthetic`;
+
+        // Call the FLUX.1-schnell model (insanely fast, high quality, free tier friendly)
+        const hfResponse = await fetch(
+          "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+          {
+            headers: {
+              Authorization: `Bearer ${hfApiKey}`,
+              "Content-Type": "application/json",
+            },
+            method: "POST",
+            body: JSON.stringify({ inputs: cleanPrompt }),
+          }
+        );
+
+        if (!hfResponse.ok) {
+          const errorText = await hfResponse.text();
+          throw new Error(`Hugging Face API Error: ${errorText}`);
+        }
+
+        // Hugging Face returns the raw image file. We convert it to Base64 for your React frontend!
+        const arrayBuffer = await hfResponse.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const base64Image = buffer.toString('base64');
+        const imageUrl = `data:image/jpeg;base64,${base64Image}`;
 
         return res.status(200).json({ imageUrl });
 
       } catch (error: any) {
-        console.error("Backend Error:", error);
+        console.error("Hugging Face Backend Error:", error);
         return res.status(500).json({ error: error.message || "Unknown backend error" });
       }
     }
