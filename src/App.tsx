@@ -177,7 +177,7 @@ const App: React.FC = () => {
       saveToArchive(finalKit); 
     } catch (error) {
       console.error('Generation failed:', error);
-      alert('OUr servers are currently overwhelmed with vibes. Please try again in a few moments!');
+      alert('Our servers are currently overwhelmed with vibes. Please try again in a few moments!');
       setStep(AppStep.SELECTION);
     } finally {
       setIsGenerating(false);
