@@ -142,7 +142,6 @@ export default async function handler(req: any, res: any) {
     }
     const ai = new GoogleGenAI({ apiKey });
 
-    // Vercel automatically parses JSON bodies!
     const { action, payload } = req.body;
 
     // ROUTE 1: Synthesize Mood
@@ -161,10 +160,10 @@ export default async function handler(req: any, res: any) {
       2. Write a poetic personality summary that is EXACTLY TWO SHORT LINES. It MUST be a direct, high-praise compliment starting with "You...".
       3. List exactly 3 "Archetype Traits" (single words).
       4. Define an "Identity Motif" (max 130 chars). Address the user directly.
-      5. Provide an "Aesthetic Analysis" (3 sentences).
+      5. Provide an "Aesthetic Analysis" (max 130 chars).
       6. Select two high-contrast VIBRANT hex colors with poetic names.
       7. Determine the "Dominant Vibe": one of the provided list.
-      8. Generate a detailed 9:16 wallpaper prompt based on the mood.
+      8. Generate a strictly short and concise wallpaper prompt (MAXIMUM 100 CHARACTERS). Use ONLY comma-separated aesthetic keywords, colors, and the core subject (e.g. "neon cityscape, purple lighting, minimal aesthetic"). No full sentences, no fluff.
 
       Return JSON format.`;
 
@@ -197,31 +196,23 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json(data);
     }
 
-    // ROUTE 2: Generate Wallpaper (Powered by the brand new Gemini 3.1 Flash Image!)
+    // ROUTE 2: Generate Wallpaper (Pollinations Turbo Model)
     if (action === 'generateWallpaper') {
       try {
-        const cleanPrompt = `high-end mobile wallpaper, vertical 9:16 aspect ratio, ${payload}, cinematic lighting, 4k, minimalist aesthetic`;
+        // Because of step 8 above, "payload" is now guaranteed to be short and comma-separated!
+        const cleanPrompt = `high-end mobile wallpaper, 9:16 aspect ratio, ${payload}, cinematic lighting, minimalist aesthetic`;
         
-        // Use the new generateContent command with the 3.1 Flash Image model
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.1-flash-image-preview',
-          contents: cleanPrompt,
-        });
+        // Encode the prompt so the URL doesn't break
+        const encodedPrompt = encodeURIComponent(cleanPrompt);
+        
+        // Pass the perfectly sized prompt directly to the stable Turbo model
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1080&height=1920&nologo=true&model=turbo`;
 
-        // The image comes back hidden inside the response parts as Base64 data
-        const imagePart = response.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData)?.inlineData;
-
-        if (!imagePart) {
-          throw new Error("Google API did not return an image.");
-        }
-
-        // Convert it to a usable URL for your React frontend
-        const imageUrl = `data:${imagePart.mimeType};base64,${imagePart.data}`;
         return res.status(200).json({ imageUrl });
 
       } catch (error: any) {
-        console.error("Google API Error:", error);
-        return res.status(500).json({ error: error.message || "Unknown Google API error" });
+        console.error("Backend Error:", error);
+        return res.status(500).json({ error: error.message || "Unknown backend error" });
       }
     }
 
