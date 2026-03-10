@@ -32,16 +32,27 @@ export class GeminiService {
 
   async generateWallpaper(prompt: string): Promise<string | null> {
     try {
-      const response = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'generateWallpaper', payload: prompt })
+      const seed = Math.floor(Math.random() * 1000000);
+      const cleanPrompt = encodeURIComponent(`high-end mobile wallpaper, 9:16 aspect ratio, ${prompt}, cinematic lighting, 4k, minimalist aesthetic`);
+      
+      // We are back to the high-quality FLUX model!
+      const pollinationsUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1080&height=1920&nologo=true&seed=${seed}&model=flux`;
+
+      // 1. Browser fetches directly from Pollinations (bypassing Vercel bot-blocks)
+      const response = await fetch(pollinationsUrl);
+      if (!response.ok) throw new Error(`Pollinations failed: ${response.status}`);
+
+      // 2. Convert to a secure Blob
+      const blob = await response.blob();
+      
+      // 3. Convert Blob to Base64 text so html-to-image doesn't crash from CORS
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
       });
 
-      if (!response.ok) throw new Error('Failed to generate wallpaper');
-
-      const data = await response.json();
-      return data.imageUrl; // Returns the base64 string
     } catch (error) {
       console.error('Wallpaper generation failed:', error);
       return null;
