@@ -197,29 +197,24 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json(data);
     }
 
-    // ROUTE 2: Generate Wallpaper (WE ARE BACK TO HIGH QUALITY FLUX!)
+   // ROUTE 2: Generate Wallpaper (Powered by Google Imagen 3!)
     if (action === 'generateWallpaper') {
-      const seed = Math.floor(Math.random() * 1000000);
-      const cleanPrompt = encodeURIComponent(`high-end mobile wallpaper, 9:16 aspect ratio, ${payload}, cinematic lighting, 4k, minimalist aesthetic`);
+      const cleanPrompt = `high-end mobile wallpaper, 9:16 aspect ratio, ${payload}, cinematic lighting, 4k, minimalist aesthetic`;
       
-      // Using model=flux for maximum quality now that we don't have the 10s limit
-      const pollinationsUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1080&height=1920&nologo=true&seed=${seed}&model=flux`;
-
-      const imageResponse = await fetch(pollinationsUrl, {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-          "Accept": "image/jpeg"
+      // Call Google's dedicated image model
+      const imageResponse = await fetchWithRetry(() => ai.models.generateImages({
+        model: 'imagen-3.0-generate-001',
+        prompt: cleanPrompt,
+        config: {
+          numberOfImages: 1,
+          outputMimeType: "image/jpeg",
+          aspectRatio: "9:16" 
         }
-      });
-        
-      if (!imageResponse.ok) {
-        throw new Error(`Pollinations API error: ${imageResponse.status}`);
-      }
+      }));
 
-      // Convert to Base64 using Node Buffer (cleaner and faster in Vercel)
-      const arrayBuffer = await imageResponse.arrayBuffer();
-      const base64String = Buffer.from(arrayBuffer).toString('base64');
-      const imageUrl = `data:image/jpeg;base64,${base64String}`;
+      // Google returns the image as a clean Base64 string automatically
+      const base64Image = imageResponse.generatedImages[0].image.imageBytes;
+      const imageUrl = `data:image/jpeg;base64,${base64Image}`;
 
       return res.status(200).json({ imageUrl });
     }
