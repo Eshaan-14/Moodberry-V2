@@ -206,7 +206,7 @@ export default async function handler(req: any, res: any) {
         const encodedPrompt = encodeURIComponent(cleanPrompt);
         
         // Pass the perfectly sized prompt directly to the stable flux model
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1080&height=1920&nologo=true&model=flux`;
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=720&height=1280&nologo=true`;
 
         return res.status(200).json({ imageUrl });
 
