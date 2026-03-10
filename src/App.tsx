@@ -16,6 +16,12 @@ const App: React.FC = () => {
   const [showTour, setShowTour] = useState(false);
   const [tourStep, setTourStep] = useState(0);
 
+  // --- NEW STATE FOR HEADER & ERROR FEEDBACK ---
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [errorId, setErrorId] = useState<string | number | null>(null);
+  // ---------------------------------------------
+
   useEffect(() => {
     document.documentElement.classList.add('dark');
     // Load archive from local storage
@@ -31,10 +37,26 @@ const App: React.FC = () => {
     // Check for tour
     const hasSeenTour = localStorage.getItem('moodberry_has_seen_tour');
     if (!hasSeenTour) {
-      // Delay tour start slightly for smooth entry
       setTimeout(() => setShowTour(true), 1000);
     }
   }, []);
+
+  // --- NEW HEADER SCROLL LOGIC ---
+  useEffect(() => {
+    const controlNavbar = () => {
+      if (typeof window !== 'undefined') {
+        if (window.scrollY > lastScrollY && window.scrollY > 80) {
+          setIsNavVisible(false); // Hide on scroll down
+        } else {
+          setIsNavVisible(true);  // Show on scroll up
+        }
+        setLastScrollY(window.scrollY);
+      }
+    };
+    window.addEventListener('scroll', controlNavbar);
+    return () => window.removeEventListener('scroll', controlNavbar);
+  }, [lastScrollY]);
+  // -------------------------------
 
   const completeTour = () => {
     setShowTour(false);
@@ -53,7 +75,7 @@ const App: React.FC = () => {
       },
       {
         target: "name",
-        title: "Sign Your Work",
+        title: "Add your signature",
         text: "Enter your name to personalize your digital manifesto.",
         position: "top-32 right-10 md:right-40"
       },
@@ -100,7 +122,6 @@ const App: React.FC = () => {
               </button>
             </div>
           </div>
-          {/* Arrow/Pointer */}
           <div className="w-4 h-4 bg-white dark:bg-slate-900 transform rotate-45 absolute -bottom-2 left-8 border-r border-b border-indigo-500/30" />
         </div>
       </div>
@@ -108,10 +129,9 @@ const App: React.FC = () => {
   };
 
   const saveToArchive = (kit: MoodKit) => {
-    // Create a lightweight version for the archive (exclude base64 image)
     const archiveVersion: MoodKit = {
       ...kit,
-      wallpaperUrl: null // Don't save the heavy image to local storage
+      wallpaperUrl: null 
     };
     
     const newArchive = [archiveVersion, ...archivedKits];
@@ -127,9 +147,16 @@ const App: React.FC = () => {
       if (exists) return prev.filter(i => i.id !== image.id);
       
       if (prev.length >= 5) {
+        // --- NEW LIMIT WARNING LOGIC ---
         setShowLimitWarning(true);
-        setTimeout(() => setShowLimitWarning(false), 3000);
+        setErrorId(image.id); // Tell ImageGrid WHICH image to shake
+        
+        setTimeout(() => {
+          setShowLimitWarning(false);
+          setErrorId(null); // Remove the red border after 500ms
+        }, 500);
         return prev;
+        // -------------------------------
       }
       
       return [...prev, image];
@@ -151,7 +178,7 @@ const App: React.FC = () => {
       const wallpaperUrl = await geminiService.generateWallpaper(profile.wallpaperPrompt);
       const finalKit = { ...newKit, wallpaperUrl };
       setMoodKit(finalKit);
-      saveToArchive(finalKit); // Save to archive automatically
+      saveToArchive(finalKit);
     } catch (error) {
       console.error('Generation failed:', error);
       alert('The vibes were too complex for our AI. Please try again.');
@@ -162,8 +189,8 @@ const App: React.FC = () => {
   };
 
   const renderIntro = () => (
-    <div className="min-h-[92vh] flex flex-col items-center justify-center p-6 md:p-12 relative overflow-hidden transition-colors duration-700">
-      {/* Organic Berry Blobs */}
+     // ... (Your existing renderIntro remains exactly the same)
+     <div className="min-h-[92vh] flex flex-col items-center justify-center p-6 md:p-12 relative overflow-hidden transition-colors duration-700">
       <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-blue-600/20 dark:bg-blue-500/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob" />
       <div className="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-indigo-500/20 dark:bg-indigo-400/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000" />
       <div className="absolute bottom-[-20%] left-[20%] w-[50vw] h-[50vw] bg-sky-500/20 dark:bg-sky-400/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000" />
@@ -190,7 +217,6 @@ const App: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-sky-400 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           </button>
 
-          {/* How It Works Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl w-full text-left mt-12">
             {[
               { step: "01", title: "Select", desc: "Choose 3-5 images that resonate with your current vibe." },
@@ -260,13 +286,14 @@ const App: React.FC = () => {
         </div>
       </header>
 
+      {/* --- WE PASS errorId TO ImageGrid HERE --- */}
       <ImageGrid 
         images={CURATED_IMAGES}
         selectedIds={selectedImages.map(i => i.id)} 
         onToggle={toggleImageSelection} 
+        errorId={errorId}
       />
 
-      {/* Limit Warning Toast - Fixed to Viewport Bottom */}
       <div className={`!fixed bottom-12 left-1/2 transform -translate-x-1/2 z-[100] transition-all duration-300 ${showLimitWarning ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-95 pointer-events-none'}`}>
         <div className="bg-rose-600 text-white px-8 py-4 rounded-full shadow-[0_20px_50px_rgba(225,29,72,0.5)] flex items-center gap-4 border-2 border-white/20 backdrop-blur-md">
           <div className="bg-white/20 p-1 rounded-full">
@@ -279,6 +306,7 @@ const App: React.FC = () => {
   );
 
   const renderLoading = () => (
+    // ... (Your existing renderLoading remains exactly the same)
     <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 space-y-12 fade-in transition-colors duration-700">
       <div className="relative w-36 h-36">
         <div className="absolute inset-0 border-[8px] border-slate-100 dark:border-slate-900 rounded-full" />
@@ -302,6 +330,7 @@ const App: React.FC = () => {
   );
 
   const renderArchive = () => (
+    // ... (Your existing renderArchive remains exactly the same)
     <div className="max-w-7xl mx-auto py-24 px-6 md:px-12 space-y-16 fade-in">
       <div className="space-y-6 text-center">
         <h2 className="text-6xl md:text-8xl font-black text-slate-950 dark:text-slate-50 tracking-tighter leading-none">The Archive</h2>
@@ -360,6 +389,7 @@ const App: React.FC = () => {
   );
 
   const renderManifesto = () => (
+    // ... (Your existing renderManifesto remains exactly the same)
     <div className="max-w-4xl mx-auto py-24 px-6 md:px-12 space-y-20 fade-in">
       <div className="space-y-6 text-center">
         <h2 className="text-6xl md:text-8xl font-black text-slate-950 dark:text-slate-50 tracking-tighter leading-none">Manifesto</h2>
@@ -394,7 +424,8 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen transition-colors duration-700 dark">
-      <nav className="fixed top-0 w-full z-50 py-8 px-10 transition-all">
+      {/* --- NEW HEADER AUTO-HIDE CLASSES APPLIED HERE --- */}
+      <nav className={`fixed top-0 w-full z-50 py-8 px-10 transition-transform duration-500 bg-transparent backdrop-blur-sm ${isNavVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div 
             className="flex items-center gap-4 cursor-pointer group" 
