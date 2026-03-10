@@ -35,7 +35,7 @@ const USER_IMAGE_CONFIG: { filename: string; tags?: string[]; description?: stri
   { filename: '28-football.jpg', tags: ['sport', 'game', 'field', 'football', 'heartbreak'], description: 'Football match in action' },
   { filename: '29-desert.jpg', tags: ['sand', 'heat', 'dry', 'angry', 'bitter'], description: 'Vast desert dunes' },
   { filename: '30-puppy.jpg', tags: ['animal', 'cute', 'dog', 'pet', 'love'], description: 'Adorable puppy close-up' },
-  { filename: '31-mud.jpg', tags: ['messy', 'nature', 'earth', 'dirt', 'hostile'], description: 'Muddy texture close-up' },
+  { filename: '31-mud.jpg', tags: ['messy', 'nature', 'earth', 'dirt', 'hostile'], description: 'Muddy off-road drive' },
   { filename: '32-baking.jpg', tags: ['food', 'kitchen', 'cooking', 'sweet', 'calm'], description: 'Baking fresh pastries' },
   { filename: '33-dance.jpg', tags: ['movement', 'art', 'jealousy', 'energy', 'music'], description: 'Dancer in motion' },
   { filename: '34-jewels.jpg', tags: ['luxury', 'shine', 'fashion', 'ego', 'sparkle'], description: 'Sparkling jewelry display' },
