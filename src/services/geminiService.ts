@@ -32,7 +32,6 @@ export class GeminiService {
 
   async generateWallpaper(prompt: string): Promise<string | null> {
     try {
-      // Sending the request securely to your Vercel backend
       const response = await fetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,7 +39,8 @@ export class GeminiService {
       });
 
       if (!response.ok) {
-        throw new Error(`Vercel backend failed with status: ${response.status}`);
+        const errData = await response.json();
+        throw new Error(errData.error); // Prints the exact backend error!
       }
 
       const data = await response.json();
@@ -48,7 +48,6 @@ export class GeminiService {
       
     } catch (error) {
       console.error('Wallpaper generation failed:', error);
-      // Safety net fallback image so the UI never freezes on a black screen
       return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1080&auto=format&fit=crop";
     }
   }

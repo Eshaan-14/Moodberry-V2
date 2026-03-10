@@ -197,26 +197,31 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json(data);
     }
 
-   // ROUTE 2: Generate Wallpaper (Powered by Google Imagen 3!)
+    // ROUTE 2: Generate Wallpaper 
     if (action === 'generateWallpaper') {
-      const cleanPrompt = `high-end mobile wallpaper, 9:16 aspect ratio, ${payload}, cinematic lighting, 4k, minimalist aesthetic`;
-      
-      // Call Google's dedicated image model
-      const imageResponse = await fetchWithRetry(() => ai.models.generateImages({
-        model: 'imagen-3.0-generate-001',
-        prompt: cleanPrompt,
-        config: {
-          numberOfImages: 1,
-          outputMimeType: "image/jpeg",
-          aspectRatio: "9:16" 
-        }
-      }));
+      try {
+        const cleanPrompt = `high-end mobile wallpaper, 9:16 aspect ratio, ${payload}, cinematic lighting, 4k, minimalist aesthetic`;
+        
+        const imageResponse = await ai.models.generateImages({
+          model: 'imagen-3.0-generate-002', // Updated model
+          prompt: cleanPrompt,
+          config: {
+            numberOfImages: 1,
+            outputMimeType: "image/jpeg",
+            aspectRatio: "9:16" 
+          }
+        });
 
-      // Google returns the image as a clean Base64 string automatically
-      const base64Image = imageResponse.generatedImages[0].image.imageBytes;
-      const imageUrl = `data:image/jpeg;base64,${base64Image}`;
+        const base64Image = imageResponse.generatedImages[0].image.imageBytes;
+        const imageUrl = `data:image/jpeg;base64,${base64Image}`;
 
-      return res.status(200).json({ imageUrl });
+        return res.status(200).json({ imageUrl });
+
+      } catch (error: any) {
+        // Catches the exact error and sends it to the frontend
+        console.error("Google API Error:", error);
+        return res.status(500).json({ error: error.message || "Unknown Google API error" });
+      }
     }
 
     return res.status(400).json({ error: "Invalid Action" });
