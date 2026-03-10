@@ -13,7 +13,7 @@ export class GeminiService {
     if (!response.ok) {
       throw new Error(`Backend error: ${response.statusText}`);
     }
-
+    
     const data = await response.json();
     
     // 2. Map the dominant vibe to a curated song on the frontend
@@ -44,6 +44,7 @@ export class GeminiService {
       }
 
       const data = await response.json();
+      console.log("SUCCESS! Here is the image link:", data.imageUrl); // Add this line!
       return data.imageUrl; 
       
     } catch (error) {
