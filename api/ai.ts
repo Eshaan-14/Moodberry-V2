@@ -210,7 +210,7 @@ export default async function handler(req: any, res: any) {
 
         // Call the FLUX.1-schnell model (insanely fast, high quality, free tier friendly)
         const hfResponse = await fetch(
-          "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+          "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
           {
             headers: {
               Authorization: `Bearer ${hfApiKey}`,
