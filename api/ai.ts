@@ -208,7 +208,7 @@ export default async function handler(req: any, res: any) {
         // We use the short, optimized payload from Gemini
         const cleanPrompt = `high-end mobile wallpaper, vertical 9:16 aspect ratio, ${payload}, cinematic lighting, highly detailed, aesthetic`;
 
-        // Call the FLUX.1-schnell model (insanely fast, high quality, free tier friendly)
+        // Call the FLUX.1-schnell model using the Hugging Face Router URL
         const hfResponse = await fetch(
           "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
           {
@@ -217,7 +217,14 @@ export default async function handler(req: any, res: any) {
               "Content-Type": "application/json",
             },
             method: "POST",
-            body: JSON.stringify({ inputs: cleanPrompt }),
+            // WE ADD THE EXACT PIXEL DIMENSIONS HERE:
+            body: JSON.stringify({ 
+              inputs: cleanPrompt,
+              parameters: {
+                width: 576,
+                height: 1024
+              }
+            }),
           }
         );
 
