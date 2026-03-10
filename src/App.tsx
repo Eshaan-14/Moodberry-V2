@@ -16,15 +16,13 @@ const App: React.FC = () => {
   const [showTour, setShowTour] = useState(false);
   const [tourStep, setTourStep] = useState(0);
 
-  // --- NEW STATE FOR HEADER & ERROR FEEDBACK ---
-  const [isNavVisible, setIsNavVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  // --- ERROR FEEDBACK & BACK-TO-TOP STATE ---
   const [errorId, setErrorId] = useState<string | number | null>(null);
-  // ---------------------------------------------
+  const [showLimitWarning, setShowLimitWarning] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
-    // Load archive from local storage
     const savedArchive = localStorage.getItem('moodberry_archive');
     if (savedArchive) {
       try {
@@ -34,29 +32,30 @@ const App: React.FC = () => {
       }
     }
 
-    // Check for tour
     const hasSeenTour = localStorage.getItem('moodberry_has_seen_tour');
     if (!hasSeenTour) {
       setTimeout(() => setShowTour(true), 1000);
     }
   }, []);
 
-  // --- NEW HEADER SCROLL LOGIC ---
+  // --- BACK TO TOP SCROLL LISTENER ---
   useEffect(() => {
-    const controlNavbar = () => {
-      if (typeof window !== 'undefined') {
-        if (window.scrollY > lastScrollY && window.scrollY > 80) {
-          setIsNavVisible(false); // Hide on scroll down
-        } else {
-          setIsNavVisible(true);  // Show on scroll up
-        }
-        setLastScrollY(window.scrollY);
+    const handleScroll = () => {
+      // Show button if user scrolls down past 300px
+      if (window.scrollY > 300) {
+        setShowBackToTop(true);
+      } else {
+        setShowBackToTop(false);
       }
     };
-    window.addEventListener('scroll', controlNavbar);
-    return () => window.removeEventListener('scroll', controlNavbar);
-  }, [lastScrollY]);
-  // -------------------------------
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const completeTour = () => {
     setShowTour(false);
@@ -139,24 +138,21 @@ const App: React.FC = () => {
     localStorage.setItem('moodberry_archive', JSON.stringify(newArchive));
   };
 
-  const [showLimitWarning, setShowLimitWarning] = useState(false);
-
   const toggleImageSelection = (image: CuratedImage) => {
     setSelectedImages(prev => {
       const exists = prev.find(i => i.id === image.id);
       if (exists) return prev.filter(i => i.id !== image.id);
       
       if (prev.length >= 5) {
-        // --- NEW LIMIT WARNING LOGIC ---
+        // Trigger red border and shake
         setShowLimitWarning(true);
-        setErrorId(image.id); // Tell ImageGrid WHICH image to shake
+        setErrorId(image.id); 
         
         setTimeout(() => {
           setShowLimitWarning(false);
-          setErrorId(null); // Remove the red border after 500ms
+          setErrorId(null); 
         }, 500);
         return prev;
-        // -------------------------------
       }
       
       return [...prev, image];
@@ -178,7 +174,7 @@ const App: React.FC = () => {
       const wallpaperUrl = await geminiService.generateWallpaper(profile.wallpaperPrompt);
       const finalKit = { ...newKit, wallpaperUrl };
       setMoodKit(finalKit);
-      saveToArchive(finalKit);
+      saveToArchive(finalKit); 
     } catch (error) {
       console.error('Generation failed:', error);
       alert('The vibes were too complex for our AI. Please try again.');
@@ -189,13 +185,12 @@ const App: React.FC = () => {
   };
 
   const renderIntro = () => (
-     // ... (Your existing renderIntro remains exactly the same)
-     <div className="min-h-[92vh] flex flex-col items-center justify-center p-6 md:p-12 relative overflow-hidden transition-colors duration-700">
+    <div className="min-h-[92vh] flex flex-col items-center justify-center p-6 md:p-12 relative overflow-hidden transition-colors duration-700">
       <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-blue-600/20 dark:bg-blue-500/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob" />
       <div className="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-indigo-500/20 dark:bg-indigo-400/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-2000" />
       <div className="absolute bottom-[-20%] left-[20%] w-[50vw] h-[50vw] bg-sky-500/20 dark:bg-sky-400/10 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000" />
 
-      <div className="max-w-5xl w-full text-center space-y-16 relative z-10 fade-in">
+      <div className="max-w-5xl w-full text-center space-y-16 relative z-10 fade-in pt-16">
         <div className="space-y-8">
           <span className="text-[10px] font-extrabold tracking-[0.5em] text-sky-600 dark:text-sky-300 uppercase block mb-4">
             A New Digital Era of Expression
@@ -242,7 +237,7 @@ const App: React.FC = () => {
   );
 
   const renderSelection = () => (
-    <div className="max-w-7xl mx-auto py-24 px-6 md:px-12 space-y-20 fade-in transition-colors duration-700">
+    <div className="max-w-7xl mx-auto py-24 px-6 md:px-12 space-y-20 fade-in transition-colors duration-700 pt-32">
       <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-10 border-b border-slate-100 dark:border-slate-900 pb-16">
         <div className="space-y-6">
           <h2 className="text-6xl md:text-7xl font-black text-slate-950 dark:text-slate-50 tracking-tight leading-none">The Vibrary</h2>
@@ -286,7 +281,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* --- WE PASS errorId TO ImageGrid HERE --- */}
+      {/* Grid passed the errorId to trigger the red border */}
       <ImageGrid 
         images={CURATED_IMAGES}
         selectedIds={selectedImages.map(i => i.id)} 
@@ -294,6 +289,7 @@ const App: React.FC = () => {
         errorId={errorId}
       />
 
+      {/* Limit Warning Toast */}
       <div className={`!fixed bottom-12 left-1/2 transform -translate-x-1/2 z-[100] transition-all duration-300 ${showLimitWarning ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-95 pointer-events-none'}`}>
         <div className="bg-rose-600 text-white px-8 py-4 rounded-full shadow-[0_20px_50px_rgba(225,29,72,0.5)] flex items-center gap-4 border-2 border-white/20 backdrop-blur-md">
           <div className="bg-white/20 p-1 rounded-full">
@@ -306,7 +302,6 @@ const App: React.FC = () => {
   );
 
   const renderLoading = () => (
-    // ... (Your existing renderLoading remains exactly the same)
     <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 space-y-12 fade-in transition-colors duration-700">
       <div className="relative w-36 h-36">
         <div className="absolute inset-0 border-[8px] border-slate-100 dark:border-slate-900 rounded-full" />
@@ -330,8 +325,7 @@ const App: React.FC = () => {
   );
 
   const renderArchive = () => (
-    // ... (Your existing renderArchive remains exactly the same)
-    <div className="max-w-7xl mx-auto py-24 px-6 md:px-12 space-y-16 fade-in">
+    <div className="max-w-7xl mx-auto py-24 px-6 md:px-12 space-y-16 fade-in pt-32">
       <div className="space-y-6 text-center">
         <h2 className="text-6xl md:text-8xl font-black text-slate-950 dark:text-slate-50 tracking-tighter leading-none">The Archive</h2>
         <p className="text-blue-400 dark:text-sky-500 text-xs font-black uppercase tracking-[0.4em]">Your Digital History</p>
@@ -363,7 +357,6 @@ const App: React.FC = () => {
               >
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
                 
-                {/* Decorative Pattern Overlay */}
                 <div className="absolute inset-0 opacity-30 mix-blend-overlay" 
                      style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8) 0%, transparent 50%)' }} 
                 />
@@ -389,8 +382,7 @@ const App: React.FC = () => {
   );
 
   const renderManifesto = () => (
-    // ... (Your existing renderManifesto remains exactly the same)
-    <div className="max-w-4xl mx-auto py-24 px-6 md:px-12 space-y-20 fade-in">
+    <div className="max-w-4xl mx-auto py-24 px-6 md:px-12 space-y-20 fade-in pt-32">
       <div className="space-y-6 text-center">
         <h2 className="text-6xl md:text-8xl font-black text-slate-950 dark:text-slate-50 tracking-tighter leading-none">Manifesto</h2>
         <p className="text-blue-400 dark:text-sky-500 text-xs font-black uppercase tracking-[0.4em]">Our Philosophy</p>
@@ -423,9 +415,9 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen transition-colors duration-700 dark">
-      {/* --- NEW HEADER AUTO-HIDE CLASSES APPLIED HERE --- */}
-      <nav className={`fixed top-0 w-full z-50 py-8 px-10 transition-transform duration-500 bg-transparent backdrop-blur-sm ${isNavVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+    <div className="min-h-screen transition-colors duration-700 dark relative">
+      {/* STATIC ABSOLUTE HEADER */}
+      <nav className="absolute top-0 left-0 w-full z-50 py-8 px-10 bg-transparent">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div 
             className="flex items-center gap-4 cursor-pointer group" 
@@ -479,6 +471,19 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* BACK TO TOP BUTTON */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-8 right-8 z-[90] p-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-[0_10px_30px_rgba(79,70,229,0.4)] transition-all duration-300 transform ${
+          showBackToTop ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-90 pointer-events-none'
+        }`}
+        aria-label="Back to top"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+      </button>
     </div>
   );
 };
