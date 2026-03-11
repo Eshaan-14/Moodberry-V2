@@ -1,5 +1,5 @@
 import { MoodProfile, CuratedImage } from "../types";
-import { SONG_MAP } from "../constants";
+import { ALL_SONGS } from "../constants"; 
 
 export class GeminiService {
   async synthesizeMood(selectedImages: CuratedImage[]): Promise<MoodProfile> {
