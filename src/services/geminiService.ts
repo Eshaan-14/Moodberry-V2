@@ -1,10 +1,9 @@
 import { MoodProfile, CuratedImage } from "../types";
 import { SONG_MAP } from "../constants";
-import { getRandomPlaylist } from '../constants';
 
 export class GeminiService {
   async synthesizeMood(selectedImages: CuratedImage[]): Promise<MoodProfile> {
-    // 1. Send the data to your secure Netlify backend
+    // 1. Send the data to your secure backend
     const response = await fetch('/api/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -17,10 +16,13 @@ export class GeminiService {
     
     const data = await response.json();
     
-    // 2. Map the dominant vibe to a curated song on the frontend
-    const vibeKey = (data.dominantVibe || 'default').toLowerCase();
-    const songList = SONG_MAP[vibeKey] || SONG_MAP['default'];
-    const songData = songList[Math.floor(Math.random() * songList.length)];
+    // --- ALWAYS CHOOSE A COMPLETELY RANDOM SONG ---
+    // Merge every single array in your SONG_MAP into one giant list of 50+ songs
+    const allSongs = Object.values(SONG_MAP).flat();
+
+    // Pick ONE truly random song from the entire database (Fixed the case here!)
+    const songData = allSongs[Math.floor(Math.random() * allSongs.length)];
+    // ----------------------------------------------
 
     return {
       ...data,
@@ -41,15 +43,16 @@ export class GeminiService {
 
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.error); // Prints the exact backend error!
+        throw new Error(errData.error); 
       }
 
       const data = await response.json();
-      console.log("SUCCESS! Here is the image link:", data.imageUrl); // Add this line!
+      console.log("SUCCESS! Here is the image link:", data.imageUrl); 
       return data.imageUrl; 
       
     } catch (error) {
       console.error('Wallpaper generation failed:', error);
+      // Beautiful fallback image if the AI image generator times out
       return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1080&auto=format&fit=crop";
     }
   }
