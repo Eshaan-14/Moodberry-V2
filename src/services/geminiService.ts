@@ -17,11 +17,8 @@ export class GeminiService {
     const data = await response.json();
     
     // --- ALWAYS CHOOSE A COMPLETELY RANDOM SONG ---
-    // Merge every single array in your SONG_MAP into one giant list of 50+ songs
-    const allSongs = Object.values(SONG_MAP).flat();
-
-    // Pick ONE truly random song from the entire database (Fixed the case here!)
-    const songData = allSongs[Math.floor(Math.random() * allSongs.length)];
+    // Pick ONE truly random song directly from the imported ALL_SONGS array
+    const songData = ALL_SONGS[Math.floor(Math.random() * ALL_SONGS.length)];
     // ----------------------------------------------
 
     return {
