@@ -17,7 +17,7 @@ const USER_IMAGE_CONFIG: { filename: string; tags?: string[]; description?: stri
   { filename: '10-guitar.jpg', tags: ['music', 'instrument', 'acoustic', 'guitar', 'sound'], description: 'Acoustic guitar close-up' },
   { filename: '11-swimming.jpg', tags: ['water', 'blue', 'summer', 'pool', 'refreshing'], description: 'Swimming pool water' },
   { filename: '12-blossom.jpg', tags: ['nature', 'pink', 'spring', 'flowers', 'bloom'], description: 'Cherry blossoms in full bloom' },
-  { filename: '13-phone.jpg', tags: ['tech', 'vintage', 'communication', 'phone', 'retro'], description: 'Vintage telephone aesthetic' },
+  { filename: '13-phone.jpg', tags: ['tech', 'modern', 'communication', 'phone', 'arrogance'], description: 'Latest technology and electronics' },
   { filename: '14-storm.jpg', tags: ['weather', 'dark', 'moody', 'storm', 'clouds'], description: 'Dramatic stormy sky' },
   { filename: '15-detective.jpg', tags: ['mystery', 'noir', 'shadow', 'detective', 'crime'], description: 'Classic detective noir style' },
   { filename: '16-running.jpg', tags: ['fitness', 'energy', 'motion', 'running', 'lonely'], description: 'Runner in motion' },
