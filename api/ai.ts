@@ -157,7 +157,7 @@ export default async function handler(req: any, res: any) {
       1. Define a "Persona Name" that MUST be strictly one Adjective + one Noun. 
           - The Adjective MUST be selected from the provided list: [${PERSONA_ADJECTIVES.join(', ')}].
           - The Noun MUST be selected from the provided list: [${PERSONA_NOUNS.join(', ')}].
-      2. Write a poetic personality summary that is EXACTLY TWO SHORT LINES. It MUST be a direct, high-praise compliment starting with "You...".
+      2. Write a poetic personality summary that is EXACTLY TWO SHORT LINES AND LESS THAN 130 CHARACTERS. It MUST be a direct, high-praise compliment starting with "You...".
       3. List exactly 3 "Archetype Traits" (single words).
       4. Define an "Identity Motif" (max 130 chars). Address the user directly.
       5. Provide an "Aesthetic Analysis" (max 130 chars).
