@@ -195,8 +195,8 @@ const App: React.FC = () => {
           <span className="text-[10px] font-extrabold tracking-[0.5em] text-sky-600 dark:text-sky-300 uppercase block mb-4">
             A New Digital Era of Expression
           </span>
-          <h1 className="text-5xl sm:text-6xl md:text-[11.5rem] pr-4 md:pr-8 font-black text-blue-950 dark:text-sky-50 tracking-[-0.05em] leading-[0.82] transition-colors drop-shadow-sm hover:text-amber-400 cursor-default">
-              MOOD<span className="serif italic font-light text-blue-600 dark:text-blue-400 hover:text-amber-300 transition-colors">BERRY</span>
+          <h1 className="text-6xl sm:text-7xl md:text-[11.5rem] pr-4 md:pr-8 font-black text-blue-950 dark:text-sky-50 tracking-[-0.05em] leading-[0.82] transition-colors drop-shadow-sm hover:text-amber-400 cursor-default">
+            MOOD<span className="serif italic font-light text-blue-600 dark:text-blue-400 hover:text-amber-300 transition-colors">BERRY</span>
           </h1>
           <p className="text-xl md:text-3xl text-blue-800 dark:text-sky-200 font-normal max-w-3xl mx-auto leading-[1.4] tracking-tight">
             Curate a feeling through pure imagery. We'll manifest your entire digital identity—<span className="serif italic text-blue-950 dark:text-sky-50">instantly</span>.
