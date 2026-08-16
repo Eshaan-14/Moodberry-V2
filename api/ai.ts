@@ -196,8 +196,8 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json(data);
     }
 
-    // ROUTE 2: Generate Wallpaper (Pollinations Turbo Model)
-    // ROUTE 2: Generate Wallpaper (Powered by Hugging Face FLUX.1)
+  
+    // ROUTE 2: Generate Wallpaper (Powered by Hugging Face FLUX.1) Changing to Serverless SDXL
     if (action === 'generateWallpaper') {
       try {
         const hfApiKey = process.env.HF_API_KEY;
@@ -210,11 +210,12 @@ export default async function handler(req: any, res: any) {
 
         // Call the FLUX.1-schnell model using the Hugging Face Router URL
         const hfResponse = await fetch(
-          "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
+          "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0",
           {
             headers: {
               Authorization: `Bearer ${hfApiKey}`,
               "Content-Type": "application/json",
+              "x-use-cache": "false",
             },
             method: "POST",
             // WE ADD THE EXACT PIXEL DIMENSIONS HERE:
