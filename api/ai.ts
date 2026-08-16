@@ -210,7 +210,7 @@ export default async function handler(req: any, res: any) {
 
         // Call the FLUX.1-schnell model using the Hugging Face Router URL
         const hfResponse = await fetch(
-          "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
+          "https://router.huggingface.co/models/CompVis/stable-diffusion-v1-4",
           {
             headers: {
               Authorization: `Bearer ${hfApiKey}`,
