@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer';
 import { GoogleGenAI, Type } from "@google/genai";
+import { InferenceClient } from "@huggingface/inference";
 
 const PERSONA_ADJECTIVES = [
   "Able", "Absolute", "Abstract", "Academic", "Accessible", "Acclaimed", "Accomplished", "Accurate", "Ace", "Active",
@@ -197,51 +198,34 @@ export default async function handler(req: any, res: any) {
     }
 
   
-    // ROUTE 2: Generate Wallpaper (Powered by Hugging Face FLUX.1) Changing to Serverless SDXL
+    // ROUTE 2: Generate Wallpaper (Hugging Face Auto-Routed Inference)
     if (action === 'generateWallpaper') {
       try {
         const hfApiKey = process.env.HF_API_KEY;
         if (!hfApiKey) {
           throw new Error("Missing Hugging Face API Key!");
         }
-
-        // We use the short, optimized payload from Gemini
+    
+        const client = new InferenceClient(hfApiKey);
+    
         const cleanPrompt = `high-end mobile wallpaper, vertical 9:16 aspect ratio, ${payload}, cinematic lighting, highly detailed, aesthetic`;
-
-        // Call the FLUX.1-schnell model using the Hugging Face Router URL
-        const hfResponse = await fetch(
-          "https://router.huggingface.co/replicate/models/black-forest-labs/FLUX.1-dev",
-          {
-            headers: {
-              Authorization: `Bearer ${hfApiKey}`,
-              "Content-Type": "application/json",
-              "x-use-cache": "false",
-            },
-            method: "POST",
-            // WE ADD THE EXACT PIXEL DIMENSIONS HERE:
-            body: JSON.stringify({ 
-              inputs: cleanPrompt,
-              parameters: {
-                width: 576,
-                height: 1024
-              }
-            }),
-          }
-        );
-
-        if (!hfResponse.ok) {
-          const errorText = await hfResponse.text();
-          throw new Error(`Hugging Face API Error: ${errorText}`);
-        }
-
-        // Hugging Face returns the raw image file. We convert it to Base64 for your React frontend!
-        const arrayBuffer = await hfResponse.arrayBuffer();
+    
+        const imageBlob = await client.textToImage({
+          model: "black-forest-labs/FLUX.1-dev",
+          inputs: cleanPrompt,
+          parameters: {
+            width: 576,
+            height: 1024,
+          },
+        });
+    
+        const arrayBuffer = await imageBlob.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const base64Image = buffer.toString('base64');
         const imageUrl = `data:image/jpeg;base64,${base64Image}`;
-
+    
         return res.status(200).json({ imageUrl });
-
+    
       } catch (error: any) {
         console.error("Hugging Face Backend Error:", error);
         return res.status(500).json({ error: error.message || "Unknown backend error" });
